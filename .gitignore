@@ -4,4 +4,4 @@ dist
 *.local
 .idea
 .vscode
-
+deploy.sh
