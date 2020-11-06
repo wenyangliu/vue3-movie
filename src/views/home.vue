@@ -118,7 +118,7 @@
       const fetchData = async (query) => {
         let keys = Object.keys(query)
         const queryString = keys.map(key => `${key}=${query[key]}`).join('&')
-        const page = await fetch(`http://localhost:3001/movies?${queryString}`)
+        const page = await fetch(`/movies?${queryString}`)
           .then(res => res.json())
         state.movies = page.data
         state.total = page.total
