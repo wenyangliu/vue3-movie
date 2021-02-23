@@ -27,8 +27,8 @@ jobs:
 
       # Runs a single command using the runners shell
       - name: 安装node.js
-      uses: actions/setup-node@v1
-      with:
+        uses: actions/setup-node@v1
+        with:
           node-version: 14.0.0
 
       # 安装依赖
