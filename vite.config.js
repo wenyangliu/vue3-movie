@@ -1,6 +1,9 @@
-module.exports = {
+import vue from '@vitejs/plugin-vue'
+
+export default {
   // 解决打包路径问题
   base: './',
+  plugins: [vue()],
   // 解决跨域
   // proxy: {
   //   '/movies': {

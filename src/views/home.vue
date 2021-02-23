@@ -4,7 +4,15 @@
     <div class="header">
       <section class="row">
         <label class="label">影片名称</label>
-        <input class="search" type="text" v-model="state.input" :placeholder="state.placeholder" @keyup.enter="search">
+        <ElAutocomplete
+            v-model="state.input"
+            :fetch-suggestions="querySearchAsync"
+            :placeholder="state.placeholder"
+            @select="handleSelect"
+            clearable
+            @clear="setBlur"
+        ></ElAutocomplete>
+        <!--        <input class="search" type="text" v-model="state.input" :placeholder="state.placeholder" @keyup.enter="search">-->
       </section>
       <section class="row" v-for="(tag,id) in state.tags" :key="id">
         <label class="label space">{{tag.name}}</label>
@@ -46,26 +54,30 @@
     <!--分页开始-->
     <div class="pagination-container">
       <div class="flex1"></div>
-      <el-pagination
+      <ElPagination
           background
           :hide-on-single-page="true"
           layout="total, prev, pager, next, jumper"
           :page-size="state.pageSize"
           @current-change="handleCurrentChange"
           :total="state.total">
-      </el-pagination>
+      </ElPagination>
     </div>
     <!--分页结束-->
   </div>
 </template>
 
 <script>
-  import {reactive, onMounted, watchEffect} from 'vue'
+  import {reactive, onMounted, watchEffect, defineComponent} from 'vue'
   import lodash from 'lodash'
   import {tags} from '../constant'
+  import {ElAutocomplete, ElPagination} from 'element-plus'
 
-  export default {
-    name: 'App',
+  export default defineComponent({
+    components: {
+      ElAutocomplete,
+      ElPagination
+    },
     setup() {
       const state = reactive({
         placeholder: '复仇者联盟',
@@ -74,7 +86,8 @@
         pageSize: 12,
         query: {skip: 0, limit: 12},
         movies: [],
-        tags
+        tags,
+        timeout: null
       })
 
       // 类别 数组变字符串
@@ -114,6 +127,44 @@
         }
       }
 
+      async function querySearchAsync(queryString, cb) {
+        let movies = [], results = []
+        if (queryString) {
+          state.query.q = queryString
+          let movies = await searchData(state.query)
+          movies = movies.map(it => ({value: it.name}))
+          results = movies.filter(it => it.value.includes(queryString))
+        } else {
+          results = movies
+        }
+        console.log(results)
+        clearTimeout(state.timeout)
+        state.timeout = setTimeout(() => {
+          cb(results)
+        }, 500)
+      }
+
+      function handleSelect(item) {
+        state.query.q = state.input
+        if (state.query.q) {
+          fetchData(state.query)
+        }
+      }
+
+      function setBlur() {
+        state.input = ''
+        delete state.query.q
+        fetchData(state.query)
+      }
+
+      async function searchData(query) {
+        let keys = Object.keys(query)
+        const queryString = keys.map(key => `${key}=${query[key]}`).join('&')
+        const page = await fetch(`http://39.106.81.114:3001/movies?${queryString}`)
+          .then(res => res.json())
+        return page.data
+      }
+
       // 数据请求
       const fetchData = async (query) => {
         let keys = Object.keys(query)
@@ -130,9 +181,9 @@
         // })
       })
 
-      return {state, search, searchByTag, transformGenres, handleCurrentChange}
+      return {state, search, searchByTag, transformGenres, handleCurrentChange, querySearchAsync, handleSelect, setBlur}
     }
-  }
+  })
 </script>
 
 <style>
