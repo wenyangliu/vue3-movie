@@ -41,20 +41,15 @@ jobs:
 
       # 上传阿里云
       - name: 发布到阿里云
-        uses: easingthemes/ssh-deploy@v2.1.1
+        uses: AEnterprise/rsync-deploy@v1.0
         env:
-          # 私钥
-          SSH_PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          # scp参数
-          ARGS: "-avzr --delete"
-          # 源目录
-          SOURCE: "dist"
-          # 服务器ip
-          REMOTE_HOST: "39.106.81.114"
-          # 用户
-          REMOTE_USER: "root"
-          # 目标地址
-          TARGET: "/root/code/web"
+          DEPLOY_KEY: ${{ secrets.PRIVATE_KEY }}
+          ARGS: "-e -c -r --delete"
+          SERVER_PORT: "22"
+          FOLDER: "dist"
+          SERVER_IP: "39.106.81.114"
+          USERNAME: "root"
+          SERVER_DESTINATION: "/root/code/web"
 
       - name: 操作完成
         run: echo success
